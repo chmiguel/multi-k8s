@@ -9,6 +9,8 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
+console.log(keys)
+
 // Postgres Client Setup
 const { Pool } = require("pg")
 const pgClient = new Pool({
@@ -16,11 +18,7 @@ const pgClient = new Pool({
   host: keys.pgHost,
   database: keys.pgDatabase,
   password: keys.pgPassword,
-  port: keys.pgPort,
-  ssl:
-    process.env.NODE_ENV !== "production"
-      ? false
-      : { rejectUnauthorized: false }
+  port: keys.pgPort
 })
 
 pgClient.on("connect", (client) => {
@@ -45,14 +43,16 @@ app.get("/", (req, res) => {
 })
 
 app.get("/values/all", async (req, res) => {
+  console.log("receiving /values/all")
   const values = await pgClient.query("SELECT * from values")
 
   res.send(values.rows)
 })
 
 app.get("/values/current", async (req, res) => {
+  console.log("receiving /values/current")
+
   redisClient.hgetall("values", (err, values) => {
-    console.log("***** values", values)
     res.send(values)
   })
 })
@@ -72,5 +72,5 @@ app.post("/values", async (req, res) => {
 })
 
 app.listen(5000, (err) => {
-  console.log("Listening")
+  console.log("Listening on port 5000")
 })
